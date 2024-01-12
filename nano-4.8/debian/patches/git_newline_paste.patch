@@ -1,0 +1,28 @@
+From 481529e8650d105c3280def764e4917af0cabb49 Mon Sep 17 00:00:00 2001
+From: Benno Schulenberg <bensberg@telfort.nl>
+Date: Fri, 20 Mar 2020 13:52:29 +0100
+Subject: [PATCH] input: accommodate silly emulators that have LF instead of CR
+ in a paste
+
+Even though a user would never type ^J to start a new line, accept it
+as a synonym of <Enter> (^M) in a bracketed paste, because apparently
+bash accepts it as a synonym too.
+
+This works around https://savannah.gnu.org/bugs/?58010.
+---
+ src/nano.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: nano-4.8/src/nano.c
+===================================================================
+--- nano-4.8.orig/src/nano.c
++++ nano-4.8/src/nano.c
+@@ -1471,7 +1471,7 @@ void suck_up_input_and_paste_it(void)
+ 	while (bracketed_paste) {
+ 		int input = get_kbinput(edit, BLIND);
+ 
+-		if (input == CR_CODE) {
++		if (input == CR_CODE || input == '\n') {
+ 			line->next = make_new_node(line);
+ 			line = line->next;
+ 			line->data = copy_of("");
